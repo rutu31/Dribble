@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>   
+    <title>Dribbble Gallery</title>
+    <link rel="stylesheet" href="dribbble.css" />
+    <script type="text/javascript" src="jquery.js"></script>
+</head>
+<body>
+    <div id="outerContainer">
+        <div id="header">
+            <input class="categoryButton" type="button" value="Popular" />
+            <input class="categoryButton" type="button" value="Debut" />
+            <input class="categoryButton" type="button" value="Everyone" />
+        </div>
+        <div id="imagesContainer">
+            <span style="color: orange; font-size: 20px; ">Dribbble Gallery</span>
+        </div>
+    </div>
+    
+    <script type="text/javascript" language="javascript">
+
+    var currentCategory;
+    var currentPageLoadMoreFlag; 
+    var lastShotNumber;
+    var pageFold;
+    var lastImageInCurrentFold;
+
+    // function to display shot images
+    function displayShots(){
+        var shotsArray;
+
+        // reference correct array
+        if(currentCategory == "Popular")
+            shotsArray = popularShotsArray;
+        else if(currentCategory == "Debut")
+            shotsArray = debutShotsArray;
+        else if(currentCategory == "Everyone")
+            shotsArray = everyoneShotsArray;
+
+        // for initial 9 shots, empty the images container 
+        if(currentPageLoadMoreFlag == 0){
+            $("#imagesContainer").empty();
+            pageFold = 0;
+        }    
+
+        // 'load more' clicks decide page fold numbers
+        pageFold++;
+
+        // calculate last number of images in the current page fold       
+        lastImageInCurrentFold = 9 * pageFold;
+
+        // display 9 images from last image displayed
+        for(var i=lastShotNumber; i < lastImageInCurrentFold; i++){
+            var shot = shotsArray[i];
+
+            // create div element, add image to it, specify number of likes & comments
+            var outerDivElem = $("<div class='outerImageDiv'></div>");             
+            $("#imagesContainer").append(outerDivElem);
+            $(outerDivElem).append("<div><img class='shotImage' src='" + shot['image_teaser_url'] + "' /></div>");
+            $(outerDivElem).append("<p class='likesCount'>" + shot['likes_count'] + " Likes</p>");
+            $(outerDivElem).append("<p class='commentsCount'>" + shot['comments_count'] + " Comments</p>");
+        }
+
+        // store last shot displayed
+        lastShotNumber = i;
+
+        // create 'load more' button
+        var loadMoreElem = $("<input id='loadMore' type='button' value='Load More'>");
+        $("#imagesContainer").append(loadMoreElem);
+
+        // assign event handler to 'load more' button
+        loadMoreElem.click(function(){
+            currentPageLoadMoreFlag = 1;
+
+            // remove the button so that more images can be loaded
+            $(this).remove();
+            
+            // display next 9 images
+            if(lastShotNumber <= shotsArray.length)
+                displayShots();
+        });                  
+    }
+
+    // arrays to store popular, debut and everyone shots
+    var popularShotsArray = new Array();
+    var debutShotsArray = new Array();
+    var everyoneShotsArray = new Array();    
+
+    var totalPagesInPopular = 0;
+    var lastPopularPageNum = 0;
+
+    // load popular shots in its array
+    function loadPopularData(resp){
+        // store total num of pages for the first time
+        if(totalPagesInPopular == 0){
+            totalPagesInPopular = resp['pages'];
+            lastPopularPageNum = 1;
+        }    
+
+        // store shots in popularShotsArray
+        var shots = resp['shots'];                           
+        for(var i=0; i < shots.length; i++){
+            popularShotsArray.push(shots[i]);
+        }    
+
+        // make additional requests for shots from next pages
+        if(lastPopularPageNum < totalPagesInPopular){
+            getPopularData(++lastPopularPageNum);
+        }   
+    }        
+
+    // ajax request to get popular shots from server
+    function getPopularData($pageNum){        
+         $.ajax({
+             type: "GET",
+             url: "http://api.dribbble.com/shots/popular",
+             dataType: "jsonp",
+             data: {
+                 page: $pageNum,
+                 per_page: 30
+             },
+             success: function(resp){      
+                loadPopularData(resp);          
+             },
+             error: function(req, status, err){
+                 console.log("something went wrong", status, err); 
+             }
+         }); 
+    }
+
+    var totalPagesInDebut = 0;
+    var lastDebutPageNum = 0;
+
+    // load debut shots in its array
+    function loadDebutData(resp){
+    	// store total num of pages for the first time
+        if(totalPagesInDebut == 0){
+            totalPagesInDebut = resp['pages'];
+            lastDebutPageNum = 1;
+        }    
+
+        // store shots in debutShotsArray
+        var shots = resp['shots'];                           
+        for(var i=0; i < shots.length; i++){
+            debutShotsArray.push(shots[i]);
+        }    
+
+        // make additional requests for shots from next pages
+        if(lastDebutPageNum < totalPagesInDebut){
+            getDebutData(++lastDebutPageNum);
+        }   
+    }        
+    
+    // ajax request to get debut shots from server
+    function getDebutData($pageNum){        
+         $.ajax({
+             type: "GET",
+             url: "http://api.dribbble.com/shots/debuts",
+             dataType: "jsonp",
+             data: {
+                 page: $pageNum,
+                 per_page: 30
+             },
+             success: function(resp){      
+                 loadDebutData(resp);          
+             },
+             error: function(req, status, err){
+                 console.log("something went wrong", status, err); 
+             }
+         }); 
+    }
+
+    var totalPagesInEveryone = 0;
+    var lastEveryonePageNum = 0;
+
+    // load everyone shots in its array
+    function loadEveryoneData(resp){
+    	// store total num of pages for the first time
+        if(totalPagesInEveryone == 0){
+            totalPagesInEveryone = resp['pages'];
+            lastEveryonePageNum = 1;
+        }    
+
+        // store shots in everyoneShotsArray
+        var shots = resp['shots'];                           
+        for(var i=0; i < shots.length; i++){
+            everyoneShotsArray.push(shots[i]);
+        }    
+
+        // make additional requests for shots from next pages
+        if(lastEveryonePageNum < totalPagesInEveryone){
+            getEveryoneData(++lastEveryonePageNum);
+        }   
+    }        
+
+    // ajax request to get everyone shots from server
+    function getEveryoneData($pageNum){        
+         $.ajax({
+             type: "GET",
+             url: "http://api.dribbble.com/shots/everyone",
+             dataType: "jsonp",
+             data: {
+                 page: $pageNum,
+                 per_page: 30
+             },
+             success: function(resp){      
+                 loadEveryoneData(resp);          
+             },
+             error: function(req, status, err){
+                 console.log("something went wrong", status, err); 
+             }
+         }); 
+    }    
+
+    // document.load method
+    $(function(){
+        // make ajax calls to get all data and store in local data structures
+        getPopularData(1);
+        getDebutData(1);
+        getEveryoneData(1);
+
+        // assign event handler to header's category buttons
+        $(".categoryButton").click(function(){
+            currentPageLoadMoreFlag = 0;
+            lastShotNumber = 0;
+            
+            if($(this).val() == "Popular"){
+                currentCategory = "Popular";
+            }
+            else if($(this).val() == "Debut"){
+                currentCategory = "Debut"; 
+            }
+            else if($(this).val() == "Everyone"){
+                currentCategory = "Everyone";
+            }
+
+            // display shots on the page
+            displayShots();     
+        });        
+    });
+        
+    </script>
+</body>
+</html>

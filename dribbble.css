@@ -1,0 +1,69 @@
+body{
+    font-family: helvetica;
+}	
+
+#outerContainer{
+    margin: 0 auto;
+    width: 675px;
+    min-height: 715px;
+    border: 1px solid black;
+    float: left;
+}
+
+#header{
+    background-color: orange;
+    height: 35px;
+    border-bottom: 1px solid black;
+    padding: 10px 0 0 10px;
+}
+
+#header input{
+    font-size: 12px;
+}	
+
+.categoryButton{
+    -moz-border-radius: 20px;
+    -webkit-border-radius: 20px;
+    -khtml-border-radius: 20px;
+    border-radius: 20px;
+}
+
+#loadMore{
+    -moz-border-radius: 20px;
+    -webkit-border-radius: 20px;
+    -khtml-border-radius: 20px;
+    border-radius: 20px;
+    font-size: 15px;
+    margin-left: 250px;
+    width: 150px;
+}	
+
+#imagesContainer{
+    padding: 15px;    
+}
+
+.shotImage{
+    width: 170px;
+    height: 150px;
+    border: 1px solid black;
+}
+
+.outerImageDiv{
+    border: 1px solid black;
+    padding: 10px 10px 0 10px;
+    margin: 10px;
+    width: 172px;
+    float: left; 
+}
+
+#imagesContainer p{
+    font-size: 12px;   
+}
+
+.likesCount{
+    float: left;
+}
+
+.commentsCount{
+    float: right;
+}
